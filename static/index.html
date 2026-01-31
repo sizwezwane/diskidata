@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiskiData - Premium Football Insights</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-glow:focus {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #fbbf24;
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .player-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .player-card:hover {
+            transform: scale(1.03) translateY(-5px);
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.2);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div
+        class="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-yellow-900/20 via-slate-900 to-slate-950">
+    </div>
+
+    <nav class="sticky top-0 z-50 glass px-6 py-4 flex justify-between items-center border-b border-white/5">
+        <div class="flex items-center space-x-2 cursor-pointer" onclick="location.reload()">
+            <div class="p-2 bg-yellow-500 rounded-lg">
+                <i data-lucide="trophy" class="text-slate-900 w-6 h-6"></i>
+            </div>
+            <span class="text-2xl font-bold tracking-tight">Diski<span class="gradient-text">Data</span></span>
+        </div>
+        <div class="hidden md:flex space-x-8 font-medium text-sm lg:text-base">
+            <a href="#" class="nav-link text-yellow-500">Players</a>
+            <a href="#" class="nav-link text-slate-400">Clubs</a>
+            <a href="#" class="nav-link text-slate-400">Competitions</a>
+            <a href="#" class="nav-link text-slate-400">Market</a>
+        </div>
+        <div>
+            <button
+                class="bg-yellow-500 hover:bg-yellow-400 text-slate-950 px-5 py-2 rounded-full font-bold transition-all transform hover:scale-105">
+                Pro Insights
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 pt-20 pb-12">
+        <div class="text-center mb-16 animate-fade-in">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6">
+                Discover the <span class="gradient-text">Pulse</span> of Football
+            </h1>
+            <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10">
+                Unlock deep metrics, player valuations, and transfer insights powered by global data.
+            </p>
+
+            <div class="max-w-2xl mx-auto relative group">
+                <input type="text" id="playerSearch"
+                    class="w-full bg-slate-900/50 border border-white/10 rounded-2xl py-5 px-14 text-xl focus:outline-none focus:ring-2 focus:ring-yellow-500/50 glass search-glow transition-all"
+                    placeholder="Search for your favorite player..."
+                    onkeyup="if(event.key === 'Enter') searchPlayers()">
+                <i data-lucide="search"
+                    class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-yellow-500 transition-colors"></i>
+                <button onclick="searchPlayers()"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 bg-yellow-500 text-slate-950 p-2 rounded-xl hover:bg-yellow-400 transition-all">
+                    <i data-lucide="arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="loading" class="hidden flex flex-col items-center justify-center py-20">
+            <div class="w-12 h-12 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin"></div>
+            <p class="mt-4 text-slate-400">Fetching scouting reports...</p>
+        </div>
+
+        <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+
+        <div id="placeholder" class="text-center py-20 opacity-50">
+            <i data-lucide="database" class="w-16 h-16 mx-auto mb-4 text-slate-600"></i>
+            <p>Enter a player name above to begin exploring.</p>
+        </div>
+    </main>
+
+    <div id="playerModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-6">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeModal()"></div>
+        <div
+            class="glass max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-3xl relative z-10 shadow-2xl overflow-x-hidden">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white z-20">
+                <i data-lucide="x" class="w-8 h-8"></i>
+            </button>
+            <div id="modalContent" class="p-8"></div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function formatMarketValue(val) {
+            if (!val) return 'N/A';
+            if (val >= 1000000) return `€${(val / 1000000).toFixed(2)}m`;
+            if (val >= 1000) return `€${(val / 1000).toFixed(0)}k`;
+            return `€${val}`;
+        }
+
+        async function searchPlayers() {
+            const query = document.getElementById('playerSearch').value;
+            if (!query) return;
+
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('resultsGrid').innerHTML = '';
+
+            try {
+                const response = await fetch(`/api/players/search/${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                document.getElementById('loading').classList.add('hidden');
+
+                if (data.results && data.results.length > 0) {
+                    renderPlayers(data.results);
+                } else {
+                    document.getElementById('resultsGrid').innerHTML = `
+                        <div class="col-span-full text-center py-10 text-slate-400">
+                            No players found matching "${query}"
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('resultsGrid').innerHTML = `<p class="col-span-full text-center text-red-500">API connection error.</p>`;
+            }
+        }
+
+        function renderPlayers(players) {
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = players.map(player => `
+                <div class="player-card glass rounded-2xl overflow-hidden cursor-pointer" onclick="viewPlayer('${player.id}')">
+                    <div class="relative h-48 bg-gradient-to-br from-slate-800 to-slate-900 border-b border-white/5 flex items-center justify-center">
+                        <div class="absolute inset-0 bg-slate-950/20"></div>
+                        <i data-lucide="user" class="w-16 h-16 text-slate-700"></i>
+                        <div class="absolute bottom-4 left-4 z-30">
+                            <h3 class="text-2xl font-bold">${player.name}</h3>
+                            <p class="text-yellow-500 font-medium">${player.position || 'Professional'}</p>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex flex-col space-y-3 mb-6">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-bold text-slate-300">${player.club ? player.club.name : 'Unknown Club'}</span>
+                                <span class="text-xs text-slate-500 uppercase tracking-widest">${player.nationalities ? player.nationalities[0] : 'Global'}</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-white/5">
+                                <span class="text-sm text-slate-400">Market Value</span>
+                                <span class="text-lg font-bold text-yellow-500">${formatMarketValue(player.marketValue)}</span>
+                            </div>
+                        </div>
+                        <button class="w-full bg-white/5 hover:bg-white/10 py-3 rounded-xl font-semibold transition-all flex items-center justify-center space-x-2 group">
+                            <span class="group-hover:text-yellow-500 transition-colors">Scouting Report</span>
+                            <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-500 group-hover:text-yellow-500"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        async function viewPlayer(id) {
+            const modal = document.getElementById('playerModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            content.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="w-10 h-10 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin"></div>
+                    <p class="mt-4 text-slate-500">Compiling statistics...</p>
+                </div>
+            `;
+
+            try {
+                const results = await Promise.all([
+                    fetch(`/api/players/${id}/profile`).then(r => r.json()),
+                    fetch(`/api/players/${id}/market_value`).then(r => r.json()),
+                    fetch(`/api/players/${id}/stats`).then(r => r.json())
+                ]);
+
+                const [profile, market, stats] = results;
+
+                content.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <div class="md:col-span-1">
+                            <div class="rounded-3xl overflow-hidden glass border-yellow-500/20 mb-6 shadow-2xl relative group">
+                                <img src="${profile.imageUrl || 'https://via.placeholder.com/400x500?text=No+Photo'}" class="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-110">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                                <div class="absolute bottom-6 left-6 text-white">
+                                    <p class="text-xs uppercase tracking-[0.2em] text-yellow-500 font-bold mb-1">${profile.position || 'Player'}</p>
+                                    <p class="text-2xl font-bold">${profile.shirtNumber ? '#' + profile.shirtNumber : ''}</p>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="p-5 bg-white/5 rounded-2xl border border-white/5">
+                                    <p class="text-slate-500 text-xs uppercase tracking-widest mb-1">Current Valuation</p>
+                                    <p class="text-3xl font-bold text-yellow-500">${formatMarketValue(market.marketValue)}</p>
+                                </div>
+                                <div class="p-5 bg-white/5 rounded-2xl border border-white/5">
+                                    <p class="text-slate-500 text-xs uppercase tracking-widest mb-1">Club Affiliation</p>
+                                    <p class="text-xl font-semibold">${profile.club ? profile.club.name : (profile.currentClub || 'N/A')}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="mb-10">
+                                <h2 class="text-5xl font-bold mb-3 tracking-tight">${profile.name}</h2>
+                                <div class="flex flex-wrap items-center gap-6 text-slate-400 text-sm">
+                                    <span class="flex items-center"><i data-lucide="calendar" class="w-4 h-4 mr-2 text-yellow-500"></i> ${profile.age || 'N/A'} years</span>
+                                    <span class="flex items-center"><i data-lucide="flag" class="w-4 h-4 mr-2 text-yellow-500"></i> ${profile.citizenship?.join(', ') || 'Global'}</span>
+                                    <span class="flex items-center"><i data-lucide="target" class="w-4 h-4 mr-2 text-yellow-500"></i> ${profile.foot || 'Both'} footed</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                                <div class="p-4 glass rounded-2xl text-center border-white/5">
+                                    <p class="text-slate-500 text-[10px] uppercase tracking-widest mb-1">Height</p>
+                                    <p class="font-bold text-lg">${profile.height || 'N/A'}</p>
+                                </div>
+                                <div class="p-4 glass rounded-2xl text-center border-white/5">
+                                    <p class="text-slate-500 text-[10px] uppercase tracking-widest mb-1">Contract</p>
+                                    <p class="font-bold text-lg">${profile.contractExpires || 'N/A'}</p>
+                                </div>
+                                <div class="p-4 glass rounded-2xl text-center border-white/5">
+                                    <p class="text-slate-500 text-[10px] uppercase tracking-widest mb-1">Status</p>
+                                    <p class="font-bold text-lg text-green-400">Active</p>
+                                </div>
+                                <div class="p-4 glass rounded-2xl text-center border-white/5">
+                                    <p class="text-slate-500 text-[10px] uppercase tracking-widest mb-1">Born</p>
+                                    <p class="font-bold text-sm">${profile.birthDate || 'N/A'}</p>
+                                </div>
+                            </div>
+
+                            <h3 class="text-2xl font-bold mb-6 flex items-center">
+                                <i data-lucide="line-chart" class="w-6 h-6 mr-3 text-yellow-500"></i>
+                                Season Analytics
+                            </h3>
+                            <div class="space-y-4">
+                                ${stats.stats ? stats.stats.slice(0, 5).map(s => `
+                                    <div class="flex justify-between items-center p-4 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 flex items-center justify-center bg-yellow-500/10 text-yellow-500 rounded-xl mr-4">
+                                                <i data-lucide="medal" class="w-5 h-5"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-bold">${s.competition}</p>
+                                                <p class="text-xs text-slate-500">${s.season}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex space-x-8">
+                                            <div class="text-center">
+                                                <p class="text-slate-500 text-[10px] uppercase">Apps</p>
+                                                <p class="font-bold text-lg">${s.appearances || 0}</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p class="text-slate-500 text-[10px] uppercase">Goals</p>
+                                                <p class="font-bold text-lg text-yellow-500">${s.goals || 0}</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p class="text-slate-500 text-[10px] uppercase">Assists</p>
+                                                <p class="font-bold text-lg">${s.assists || 0}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('') : '<p class="text-slate-500 italic p-8 glass rounded-2xl text-center">No performance data found</p>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            } catch (error) {
+                console.error(error);
+                content.innerHTML = `
+                    <div class="text-center py-20">
+                        <i data-lucide="alert-circle" class="w-16 h-16 mx-auto mb-4 text-red-500"></i>
+                        <p class="text-xl font-bold">Failed to load scouting data</p>
+                        <p class="text-slate-500 mt-2">The Transfermarkt scrapers may be experiencing high load.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('playerModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+    </script>
+</body>
+
+</html>
