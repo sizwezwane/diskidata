@@ -47,8 +47,14 @@ export interface PlayerStats {
         goals: number;
         assists: number;
         yellowCards: number;
+        secondYellowCards?: number;
         redCards: number;
         minutesPlayed: number;
+        substitutionsOn?: number;
+        substitutionsOff?: number;
+        cleanSheets?: number;
+        goalsConceded?: number;
+        pointsPerMatch?: string;
     }[];
 }
 

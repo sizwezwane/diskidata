@@ -89,7 +89,30 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ playerIds, open, onClos
         const totalAssists = filteredStats.reduce((sum, s) => sum + (s.assists || 0), 0);
         const totalMinutes = filteredStats.reduce((sum, s) => sum + (s.minutesPlayed || 0), 0);
         const totalYellows = filteredStats.reduce((sum, s) => sum + (s.yellowCards || 0), 0);
+        const totalSecondYellows = filteredStats.reduce((sum, s) => sum + (s.secondYellowCards || 0), 0);
         const totalReds = filteredStats.reduce((sum, s) => sum + (s.redCards || 0), 0);
+        const totalCleanSheets = filteredStats.reduce((sum, s) => sum + (s.cleanSheets || 0), 0);
+        const totalConceded = filteredStats.reduce((sum, s) => sum + (s.goalsConceded || 0), 0);
+        const totalSubsOn = filteredStats.reduce((sum, s) => sum + (s.substitutionsOn || 0), 0);
+        const totalSubsOff = filteredStats.reduce((sum, s) => sum + (s.substitutionsOff || 0), 0);
+
+        // Calculate Per 90s
+        const goalsPer90 = totalMinutes > 0 ? (totalGoals / totalMinutes * 90).toFixed(2) : '0.00';
+        const assistsPer90 = totalMinutes > 0 ? (totalAssists / totalMinutes * 90).toFixed(2) : '0.00';
+        const gaPer90 = totalMinutes > 0 ? ((totalGoals + totalAssists) / totalMinutes * 90).toFixed(2) : '0.00';
+
+        // Calculate weighted PPG
+        let ppgNumerator = 0;
+        let ppgDenominator = 0;
+        filteredStats.forEach(s => {
+            const apps = s.appearances || 0;
+            const ppg = parseFloat(s.pointsPerMatch || '0');
+            if (!isNaN(ppg)) {
+                ppgNumerator += ppg * apps;
+                ppgDenominator += apps;
+            }
+        });
+        const avgPPG = ppgDenominator > 0 ? (ppgNumerator / ppgDenominator).toFixed(2) : 'N/A';
 
         return {
             totalApps,
@@ -97,7 +120,16 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ playerIds, open, onClos
             totalAssists,
             totalMinutes,
             totalYellows,
+            totalSecondYellows,
             totalReds,
+            totalCleanSheets,
+            totalConceded,
+            totalSubsOn,
+            totalSubsOff,
+            avgPPG,
+            goalsPer90,
+            assistsPer90,
+            gaPer90,
             minsPerGoal: totalGoals > 0 ? Math.round(totalMinutes / totalGoals) : 0,
             goalInvolvement: totalGoals + totalAssists
         };
@@ -200,10 +232,30 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ playerIds, open, onClos
                                                     <StatRow label="Goals" value={stats.totalGoals} highlight />
                                                     <StatRow label="Assists" value={stats.totalAssists} />
                                                     <StatRow label="Goal Involvements" value={stats.goalInvolvement} />
-                                                    <StatRow label="Minutes per Goal" value={stats.minsPerGoal ? `${stats.minsPerGoal}'` : '-'} />
+
+                                                    <Divider sx={{ my: 1 }} />
+                                                    <StatRow label="Goals per 90" value={stats.goalsPer90} />
+                                                    <StatRow label="Assists per 90" value={stats.assistsPer90} />
+                                                    <StatRow label="G/A per 90" value={stats.gaPer90} />
+                                                    <StatRow label="Mins per Goal" value={stats.minsPerGoal ? `${stats.minsPerGoal}'` : '-'} />
+
+                                                    <Divider sx={{ my: 1 }} />
                                                     <StatRow label="Minutes Played" value={stats.totalMinutes} />
+                                                    <StatRow label="PPG" value={stats.avgPPG} />
+                                                    <StatRow label="Substituted On" value={stats.totalSubsOn} />
+                                                    <StatRow label="Substituted Off" value={stats.totalSubsOff} />
+
+                                                    <Divider sx={{ my: 1 }} />
                                                     <StatRow label="Yellow Cards" value={stats.totalYellows} />
+                                                    <StatRow label="2nd Yellows" value={stats.totalSecondYellows} />
                                                     <StatRow label="Red Cards" value={stats.totalReds} />
+                                                    {stats.totalCleanSheets > 0 && (
+                                                        <>
+                                                            <Divider sx={{ my: 1 }} />
+                                                            <StatRow label="Clean Sheets" value={stats.totalCleanSheets} />
+                                                            <StatRow label="Goals Conceded" value={stats.totalConceded} />
+                                                        </>
+                                                    )}
                                                 </Box>
                                             </Paper>
                                         </Grid>
