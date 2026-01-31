@@ -94,26 +94,45 @@ const PlayerDialog: React.FC<PlayerDialogProps> = ({ details }) => {
                 </Grid>
 
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>Performance History</Typography>
-                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 4, bgcolor: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <Table size="small">
-                        <TableHead sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
-                            <TableRow>
-                                <TableCell sx={{ py: 2, fontWeight: 700 }}>Competition</TableCell>
-                                <TableCell align="center" sx={{ py: 2, fontWeight: 700 }}>Apps</TableCell>
-                                <TableCell align="center" sx={{ py: 2, fontWeight: 700 }}>Goals</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {details.stats.stats?.slice(0, 5).map((row, idx) => (
-                                <TableRow key={idx}>
-                                    <TableCell sx={{ py: 2 }}>{row.competitionName}</TableCell>
-                                    <TableCell align="center">{row.appearances || 0}</TableCell>
-                                    <TableCell align="center" sx={{ color: 'primary.main', fontWeight: 700 }}>{row.goals || 0}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+
+                {Object.entries(
+                    (details.stats.stats || []).reduce((acc: any, stat) => {
+                        const season = stat.seasonId;
+                        if (!acc[season]) acc[season] = [];
+                        acc[season].push(stat);
+                        return acc;
+                    }, {})
+                ).sort((a: any, b: any) => b[0].localeCompare(a[0])).map(([season, stats]: any) => (
+                    <Box key={season} sx={{ mb: 4 }}>
+                        <Typography variant="subtitle2" sx={{ mb: 1, color: 'primary.main', fontWeight: 800, letterSpacing: 1 }}>SEASON {season}</Typography>
+                        <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 4, bgcolor: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <Table size="small">
+                                <TableHead sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
+                                    <TableRow>
+                                        <TableCell sx={{ py: 1.5, fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>COMPETITION</TableCell>
+                                        <TableCell sx={{ py: 1.5, fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>CLUB</TableCell>
+                                        <TableCell align="center" sx={{ py: 1.5, fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>APPS</TableCell>
+                                        <TableCell align="center" sx={{ py: 1.5, fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>GOALS</TableCell>
+                                        <TableCell align="center" sx={{ py: 1.5, fontWeight: 700, fontSize: '0.75rem', color: 'text.secondary' }}>ASSISTS</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {stats.map((row: any, idx: number) => (
+                                        <TableRow key={idx} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <TableCell sx={{ py: 1.5 }}>
+                                                {row.competitionName || row.competition || 'N/A'}
+                                            </TableCell>
+                                            <TableCell sx={{ py: 1.5, fontWeight: 600 }}>{row.clubName || 'N/A'}</TableCell>
+                                            <TableCell align="center" sx={{ py: 1.5 }}>{row.appearances || '-'}</TableCell>
+                                            <TableCell align="center" sx={{ py: 1.5, color: row.goals > 0 ? 'primary.main' : 'inherit', fontWeight: row.goals > 0 ? 700 : 400 }}>{row.goals || '-'}</TableCell>
+                                            <TableCell align="center" sx={{ py: 1.5 }}>{row.assists || '-'}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+                ))}
             </Grid>
         </Grid>
     );

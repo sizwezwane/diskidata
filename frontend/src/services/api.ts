@@ -38,10 +38,17 @@ export interface PlayerProfile {
 
 export interface PlayerStats {
     stats: {
+        competitionId: string;
         competitionName: string;
+        seasonId: string;
+        clubId: string;
+        clubName: string;
         appearances: number;
         goals: number;
-        assists?: number;
+        assists: number;
+        yellowCards: number;
+        redCards: number;
+        minutesPlayed: number;
     }[];
 }
 
