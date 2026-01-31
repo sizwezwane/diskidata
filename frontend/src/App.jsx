@@ -55,6 +55,15 @@ const formatMarketValue = (val) => {
   return `€${val}`;
 };
 
+const categorizePosition = (position) => {
+  const pos = position?.toLowerCase() || '';
+  if (pos.includes('goalkeeper')) return 'Goalkeepers';
+  if (pos.includes('back') || pos.includes('defender')) return 'Defenders';
+  if (pos.includes('midfield')) return 'Midfielders';
+  if (pos.includes('forward') || pos.includes('winger') || pos.includes('striker')) return 'Forwards';
+  return 'Other';
+};
+
 function App() {
   const [query, setQuery] = useState('');
   const [searchType, setSearchType] = useState('players');
@@ -385,26 +394,37 @@ function App() {
                       </Typography>
 
                       <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>Current Squad</Typography>
-                      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 4, bgcolor: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <Table size="small">
-                          <TableHead sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
-                            <TableRow>
-                              <TableCell sx={{ py: 2, fontWeight: 700 }}>Player</TableCell>
-                              <TableCell align="center" sx={{ py: 2, fontWeight: 700 }}>Pos</TableCell>
-                              <TableCell align="center" sx={{ py: 2, fontWeight: 700 }}>Age</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {details.players.players?.slice(0, 10).map((p, idx) => (
-                              <TableRow key={idx}>
-                                <TableCell sx={{ py: 2, fontWeight: 600 }}>{p.name}</TableCell>
-                                <TableCell align="center">{p.position}</TableCell>
-                                <TableCell align="center">{p.age}</TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
+                      {['Goalkeepers', 'Defenders', 'Midfielders', 'Forwards', 'Other'].map(cat => {
+                        const players = details.players.players?.filter(p => categorizePosition(p.position) === cat);
+                        if (!players || players.length === 0) return null;
+                        return (
+                          <Box key={cat} sx={{ mb: 4 }}>
+                            <Typography variant="subtitle2" color="primary" sx={{ mb: 1, textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 }}>
+                              {cat}
+                            </Typography>
+                            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 4, bgcolor: 'transparent', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <Table size="small">
+                                <TableHead sx={{ bgcolor: 'rgba(255,255,255,0.02)' }}>
+                                  <TableRow>
+                                    <TableCell sx={{ py: 1, fontWeight: 700 }}>Player</TableCell>
+                                    <TableCell align="center" sx={{ py: 1, fontWeight: 700 }}>Pos</TableCell>
+                                    <TableCell align="center" sx={{ py: 1, fontWeight: 700 }}>Age</TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {players.map((p, idx) => (
+                                    <TableRow key={idx}>
+                                      <TableCell sx={{ py: 1, fontWeight: 600 }}>{p.name}</TableCell>
+                                      <TableCell align="center" sx={{ py: 1 }}>{p.position}</TableCell>
+                                      <TableCell align="center" sx={{ py: 1 }}>{p.age}</TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                          </Box>
+                        );
+                      })}
                     </>
                   )}
 
