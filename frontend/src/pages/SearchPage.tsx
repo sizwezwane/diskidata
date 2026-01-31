@@ -93,20 +93,21 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
         }
     };
 
-    const handleViewDetails = async (id: string) => {
-        setSelectedItem({ id, type: searchType });
+    const handleViewDetails = async (id: string, typeOverride?: string) => {
+        const type = typeOverride || searchType;
+        setSelectedItem({ id, type });
         setModalLoading(true);
         setDetails(null);
         try {
             let data;
-            if (searchType === 'players') {
+            if (type === 'players') {
                 const [profile, market, stats] = await Promise.all([
                     getPlayerProfile(id),
                     getPlayerMarketValue(id),
                     getPlayerStats(id)
                 ]);
                 data = { profile, market, stats };
-            } else if (searchType === 'clubs') {
+            } else if (type === 'clubs') {
                 const [profile, players] = await Promise.all([
                     getClubProfile(id),
                     getClubPlayers(id)
@@ -243,7 +244,12 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
                         <>
                             {selectedItem.type === 'players' && <PlayerDialog details={details} />}
                             {selectedItem.type === 'clubs' && <ClubDialog details={details} />}
-                            {selectedItem.type === 'competitions' && <CompetitionDialog details={details} />}
+                            {selectedItem.type === 'competitions' && (
+                                <CompetitionDialog
+                                    details={details}
+                                    onClubClick={(id) => handleViewDetails(id, 'clubs')}
+                                />
+                            )}
                         </>
                     )}
                 </DialogContent>

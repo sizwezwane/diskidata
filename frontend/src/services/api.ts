@@ -77,6 +77,9 @@ export interface CompetitionClub {
 }
 
 export interface CompetitionClubs {
+    id: string;
+    name: string;
+    season_id: string;
     clubs: CompetitionClub[];
 }
 
