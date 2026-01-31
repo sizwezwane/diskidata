@@ -16,7 +16,9 @@ import {
     LocationCity as CityIcon,
 } from '@mui/icons-material';
 
-const categorizePosition = (position) => {
+import { ClubProfile, ClubPlayers, SquadPlayer } from '../../services/api';
+
+const categorizePosition = (position: string | undefined) => {
     const pos = position?.toLowerCase() || '';
     if (pos.includes('goalkeeper')) return 'Goalkeepers';
     if (pos.includes('back') || pos.includes('defender')) return 'Defenders';
@@ -25,11 +27,18 @@ const categorizePosition = (position) => {
     return 'Other';
 };
 
-const ClubDialog = ({ details }) => {
+interface ClubDialogProps {
+    details: {
+        profile: ClubProfile;
+        players: ClubPlayers;
+    };
+}
+
+const ClubDialog: React.FC<ClubDialogProps> = ({ details }) => {
     return (
         <Grid container>
             {/* Left Sidebar */}
-            <Grid item xs={12} md={4} sx={{ bgcolor: 'rgba(255,255,255,0.02)', p: 4, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+            <Grid size={{ xs: 12, md: 4 }} sx={{ bgcolor: 'rgba(255,255,255,0.02)', p: 4, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
                 <Paper elevation={0} sx={{ borderRadius: 6, overflow: 'hidden', mb: 4, aspectRatio: '3/4', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.05)' }}>
                     <Box sx={{ opacity: 0.3 }}>
                         <GroupsIcon sx={{ fontSize: 120 }} />
@@ -45,7 +54,7 @@ const ClubDialog = ({ details }) => {
             </Grid>
 
             {/* Right Content */}
-            <Grid item xs={12} md={8} sx={{ p: 6 }}>
+            <Grid size={{ xs: 12, md: 8 }} sx={{ p: 6 }}>
                 <Typography variant="h3" sx={{ fontWeight: 800, mb: 1 }}>{details.profile.name}</Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
                     <CityIcon sx={{ fontSize: 18, mr: 1, color: 'primary.main', verticalAlign: 'middle' }} />
@@ -54,7 +63,7 @@ const ClubDialog = ({ details }) => {
 
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>Current Squad</Typography>
                 {['Goalkeepers', 'Defenders', 'Midfielders', 'Forwards', 'Other'].map(cat => {
-                    const players = details.players.players?.filter(p => categorizePosition(p.position) === cat);
+                    const players = details.players.players?.filter((p: SquadPlayer) => categorizePosition(p.position) === cat);
                     if (!players || players.length === 0) return null;
                     return (
                         <Box key={cat} sx={{ mb: 4 }}>
@@ -71,7 +80,7 @@ const ClubDialog = ({ details }) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {players.map((p, idx) => (
+                                        {players.map((p: SquadPlayer, idx: number) => (
                                             <TableRow key={idx}>
                                                 <TableCell sx={{ py: 1, fontWeight: 600 }}>{p.name}</TableCell>
                                                 <TableCell align="center" sx={{ py: 1 }}>{p.position}</TableCell>

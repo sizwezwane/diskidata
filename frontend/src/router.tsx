@@ -1,4 +1,3 @@
-import React from 'react';
 import { createRootRoute, createRoute, createRouter, redirect, Outlet } from '@tanstack/react-router';
 import { Box } from '@mui/material';
 import Navigation from './components/Navigation';
@@ -57,4 +56,11 @@ const routeTree = rootRoute.addChildren([
 ]);
 
 // Create and export the router
+// Create and export the router
 export const router = createRouter({ routeTree });
+
+declare module '@tanstack/react-router' {
+    interface Register {
+        router: typeof router;
+    }
+}

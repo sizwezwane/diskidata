@@ -32,22 +32,26 @@ import PlayerDialog from '../components/dialogs/PlayerDialog';
 import ClubDialog from '../components/dialogs/ClubDialog';
 import CompetitionDialog from '../components/dialogs/CompetitionDialog';
 
-const formatMarketValue = (val) => {
+import { SearchResultItem } from '../services/api';
+
+const formatMarketValue = (val: string | number | undefined) => {
     if (!val) return 'N/A';
-    if (val >= 1000000) return `€${(val / 1000000).toFixed(2)}M`;
-    if (val >= 1000) return `€${(val / 1000).toFixed(0)}K`;
+    if (typeof val === 'number') {
+        if (val >= 1000000) return `€${(val / 1000000).toFixed(2)}M`;
+        if (val >= 1000) return `€${(val / 1000).toFixed(0)}K`;
+    }
     return `€${val}`;
 };
 
 // Helper to safely render object or string values
-const safeRender = (value) => {
+const safeRender = (value: string | { name: string } | undefined) => {
     if (!value) return 'N/A';
     if (typeof value === 'string') return value;
     if (typeof value === 'object' && value.name) return value.name;
     return 'N/A';
 };
 
-const getIcon = (type) => {
+const getIcon = (type: string) => {
     switch (type) {
         case 'players': return <TrendIcon />;
         case 'clubs': return <GroupsIcon />;
@@ -56,14 +60,17 @@ const getIcon = (type) => {
     }
 };
 
+interface SearchPageProps {
+    searchType: 'players' | 'clubs' | 'competitions';
+}
 
-const SearchPage = ({ searchType }) => {
+const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState([]);
+    const [results, setResults] = useState<SearchResultItem[]>([]);
     const [loading, setLoading] = useState(false);
-    const [selectedItem, setSelectedItem] = useState(null);
+    const [selectedItem, setSelectedItem] = useState<{ id: string; type: string } | null>(null);
     const [modalLoading, setModalLoading] = useState(false);
-    const [details, setDetails] = useState(null);
+    const [details, setDetails] = useState<any>(null);
 
     const handleSearch = async () => {
         if (!query) return;
@@ -86,7 +93,7 @@ const SearchPage = ({ searchType }) => {
         }
     };
 
-    const handleViewDetails = async (id) => {
+    const handleViewDetails = async (id: string) => {
         setSelectedItem({ id, type: searchType });
         setModalLoading(true);
         setDetails(null);
@@ -165,7 +172,7 @@ const SearchPage = ({ searchType }) => {
             {!loading && results.length > 0 && (
                 <Grid container spacing={4} justifyContent="center">
                     {results.map((item) => (
-                        <Grid item xs={12} sm={6} md={4} key={item.id}>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
                             <Card
                                 onClick={() => handleViewDetails(item.id)}
                                 sx={{

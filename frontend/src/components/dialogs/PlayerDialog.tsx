@@ -10,7 +10,6 @@ import {
     TableHead,
     TableRow,
     Paper,
-    Avatar
 } from '@mui/material';
 import {
     CalendarToday as CalendarIcon,
@@ -19,23 +18,35 @@ import {
     MonitorWeight as FootIcon,
     Numbers as JerseyIcon,
 } from '@mui/icons-material';
+import { PlayerProfile, PlayerMarketValue, PlayerStats } from '../../services/api';
 
-const formatMarketValue = (val) => {
+const formatMarketValue = (val: string | number | undefined) => {
     if (!val) return 'N/A';
-    if (val >= 1000000) return `€${(val / 1000000).toFixed(2)}M`;
-    if (val >= 1000) return `€${(val / 1000).toFixed(0)}K`;
+    if (typeof val === 'number') {
+        if (val >= 1000000) return `€${(val / 1000000).toFixed(2)}M`;
+        if (val >= 1000) return `€${(val / 1000).toFixed(0)}K`;
+    }
     return `€${val}`;
 };
 
-const PlayerDialog = ({ details }) => {
+interface PlayerDialogProps {
+    details: {
+        profile: PlayerProfile;
+        market: PlayerMarketValue;
+        stats: PlayerStats;
+    };
+}
+
+const PlayerDialog: React.FC<PlayerDialogProps> = ({ details }) => {
     return (
         <Grid container>
             {/* Left Sidebar */}
-            <Grid item xs={12} md={4} sx={{ bgcolor: 'rgba(255,255,255,0.02)', p: 4, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+            <Grid size={{ xs: 12, md: 4 }} sx={{ bgcolor: 'rgba(255,255,255,0.02)', p: 4, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
                 <Paper elevation={0} sx={{ borderRadius: 6, overflow: 'hidden', mb: 4, aspectRatio: '3/4', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,0.05)' }}>
                     <img
                         src={details.profile.imageUrl || 'https://via.placeholder.com/400x500'}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        alt={details.profile.name}
                     />
                 </Paper>
 
@@ -52,7 +63,7 @@ const PlayerDialog = ({ details }) => {
             </Grid>
 
             {/* Right Content */}
-            <Grid item xs={12} md={8} sx={{ p: 6 }}>
+            <Grid size={{ xs: 12, md: 8 }} sx={{ p: 6 }}>
                 <Typography variant="h3" sx={{ fontWeight: 800, mb: 1, letterSpacing: '-0.03em' }}>{details.profile.name}</Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 6 }}>
                     <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
@@ -70,7 +81,7 @@ const PlayerDialog = ({ details }) => {
                         { label: 'Jersey', val: details.profile.shirtNumber || 'N/A', icon: <JerseyIcon /> },
                         { label: 'Expires', val: details.profile.club?.contractExpires || 'N/A', icon: <CalendarIcon /> }
                     ].map((item, idx) => (
-                        <Grid item xs={6} key={idx}>
+                        <Grid size={{ xs: 6 }} key={idx}>
                             <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 3, display: 'flex', alignItems: 'center' }}>
                                 <Box sx={{ mr: 2, color: 'primary.main', opacity: 0.8 }}>{item.icon}</Box>
                                 <Box>
