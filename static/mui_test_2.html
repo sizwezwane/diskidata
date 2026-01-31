@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUI ESM Test</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+    <style>
+        body {
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+
+        #root {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">Loading Material UI...</div>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18",
+        "react-dom": "https://esm.sh/react-dom@18",
+        "react-dom/client": "https://esm.sh/react-dom@18/client",
+        "@mui/material": "https://esm.sh/@mui/material@5?bundle",
+        "@emotion/react": "https://esm.sh/@emotion/react@11",
+        "@emotion/styled": "https://esm.sh/@emotion/styled@11"
+      }
+    }
+    </script>
+
+    <script type="module">
+        import React from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { Button, Container, Typography, Paper, Box } from '@mui/material';
+
+        function App() {
+            return (
+                <Container maxWidth="sm">
+                    <Paper elevation={3} sx={{ p: 4, mt: 4, borderRadius: 4 }}>
+                        <Typography variant="h4" color="primary" gutterBottom>
+                            DiskiData
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 3 }}>
+                            Material UI is successfully loading via ESM.
+                        </Typography>
+                        <Button variant="contained" color="secondary" size="large">
+                            Start Scouting
+                        </Button>
+                    </Paper>
+                </Container>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
