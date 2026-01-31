@@ -22,7 +22,10 @@ import {
     TrendingUp as TrendIcon,
     Groups as GroupsIcon,
     MilitaryTech as CompetitionIcon,
+    CompareArrows as CompareArrowsIcon,
 } from '@mui/icons-material';
+import Fab from '@mui/material/Fab';
+import Badge from '@mui/material/Badge';
 import {
     searchPlayers, getPlayerProfile, getPlayerMarketValue, getPlayerStats,
     searchClubs, getClubProfile, getClubPlayers,
@@ -31,6 +34,7 @@ import {
 import PlayerDialog from '../components/dialogs/PlayerDialog';
 import ClubDialog from '../components/dialogs/ClubDialog';
 import CompetitionDialog from '../components/dialogs/CompetitionDialog';
+import ComparisonView from '../components/ComparisonView';
 
 import { SearchResultItem } from '../services/api';
 
@@ -71,6 +75,8 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
     const [selectedItem, setSelectedItem] = useState<{ id: string; type: string } | null>(null);
     const [modalLoading, setModalLoading] = useState(false);
     const [details, setDetails] = useState<any>(null);
+    const [compareList, setCompareList] = useState<string[]>([]);
+    const [comparisonOpen, setComparisonOpen] = useState(false);
 
     const handleSearch = async () => {
         if (!query) return;
@@ -123,6 +129,15 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
         } finally {
             setModalLoading(false);
         }
+    };
+
+    const toggleCompare = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCompareList(prev => {
+            if (prev.includes(id)) return prev.filter(pid => pid !== id);
+            if (prev.length >= 3) return prev;
+            return [...prev, id];
+        });
     };
 
     return (
@@ -195,6 +210,20 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
                                     </Typography>
                                     {searchType === 'players' && (
                                         <>
+                                            <IconButton
+                                                onClick={(e) => toggleCompare(item.id, e)}
+                                                sx={{
+                                                    position: 'absolute',
+                                                    top: 8,
+                                                    right: 8,
+                                                    bgcolor: compareList.includes(item.id) ? 'primary.main' : 'rgba(0,0,0,0.05)',
+                                                    color: compareList.includes(item.id) ? 'white' : 'action.active',
+                                                    '&:hover': { bgcolor: compareList.includes(item.id) ? 'primary.dark' : 'rgba(0,0,0,0.1)' }
+                                                }}
+                                                size="small"
+                                            >
+                                                <CompareArrowsIcon fontSize="small" />
+                                            </IconButton>
                                             <Chip label={item.position} size="small" sx={{ mb: 1 }} />
                                             <Typography variant="body2" color="text.secondary" gutterBottom>
                                                 {safeRender(item.club)} • Age {item.age}
@@ -254,6 +283,29 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
                     )}
                 </DialogContent>
             </Dialog>
+
+            {/* Comparison FAB */}
+            {compareList.length > 0 && (
+                <Box sx={{ position: 'fixed', bottom: 32, right: 32, zIndex: 1000 }}>
+                    <Badge badgeContent={compareList.length} color="secondary">
+                        <Fab
+                            color="primary"
+                            variant="extended"
+                            onClick={() => setComparisonOpen(true)}
+                            sx={{ fontWeight: 700 }}
+                        >
+                            <CompareArrowsIcon sx={{ mr: 1 }} />
+                            Compare Players
+                        </Fab>
+                    </Badge>
+                </Box>
+            )}
+
+            <ComparisonView
+                open={comparisonOpen}
+                onClose={() => setComparisonOpen(false)}
+                playerIds={compareList}
+            />
         </Container>
     );
 };
