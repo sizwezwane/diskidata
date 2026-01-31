@@ -24,4 +24,31 @@ export const getPlayerStats = async (id) => {
     return response.data;
 };
 
+// Clubs
+export const searchClubs = async (query) => {
+    const response = await api.get(`/clubs/search/${encodeURIComponent(query)}`);
+    return response.data;
+};
+
+export const getClubProfile = async (id) => {
+    const response = await api.get(`/clubs/${id}/profile`);
+    return response.data;
+};
+
+export const getClubPlayers = async (id) => {
+    const response = await api.get(`/clubs/${id}/players`);
+    return response.data;
+};
+
+// Competitions
+export const searchCompetitions = async (query) => {
+    const response = await api.get(`/competitions/search/${encodeURIComponent(query)}`);
+    return response.data;
+};
+
+export const getCompetitionClubs = async (id) => {
+    const response = await api.get(`/competitions/${id}/clubs`);
+    return response.data;
+};
+
 export default api;
