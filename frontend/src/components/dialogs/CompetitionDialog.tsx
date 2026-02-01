@@ -20,14 +20,24 @@ import {
     MilitaryTech as CompetitionIcon,
     EmojiEvents as TableIcon,
     SportsSoccer as KnockoutIcon,
+    CalendarMonth as FixturesIcon,
+    Person as PlayerStatsIcon,
 } from '@mui/icons-material';
 
 import {
     CompetitionClubs,
     CompetitionTable,
     CompetitionKnockout,
+    CompetitionFixtures,
+    CompetitionScorers,
 } from '../../services/api';
-import { getCompetitionClubs, getCompetitionTable, getCompetitionKnockout } from '../../services/api';
+import {
+    getCompetitionClubs,
+    getCompetitionTable,
+    getCompetitionKnockout,
+    getCompetitionFixtures,
+    getCompetitionScorers,
+} from '../../services/api';
 
 /** Format season ID (e.g. "2024") to display label "24/25" */
 function formatSeasonLabel(seasonId: string | undefined): string {
@@ -49,11 +59,14 @@ interface CompetitionDialogProps {
         clubs: CompetitionClubs;
         table?: CompetitionTable;
         knockout?: CompetitionKnockout;
+        fixtures?: CompetitionFixtures;
+        scorers?: CompetitionScorers;
     };
     onClubClick: (id: string) => void;
+    onPlayerClick?: (id: string) => void;
 }
 
-const CompetitionDialog: React.FC<CompetitionDialogProps> = ({ details, onClubClick }) => {
+const CompetitionDialog: React.FC<CompetitionDialogProps> = ({ details, onClubClick, onPlayerClick }) => {
     const competitionId = details.clubs.id;
     const initialSeason =
         (details.clubs as { seasonId?: string; season_id?: string }).seasonId
@@ -86,11 +99,13 @@ const CompetitionDialog: React.FC<CompetitionDialogProps> = ({ details, onClubCl
                 const seasonId =
                     (clubs as { seasonId?: string; season_id?: string }).seasonId
                     || (clubs as { seasonId?: string; season_id?: string }).season_id;
-                const [table, knockout] = await Promise.all([
+                const [table, knockout, fixtures, scorers] = await Promise.all([
                     getCompetitionTable(competitionId, seasonId).catch(() => ({ id: competitionId, table: [] })),
                     getCompetitionKnockout(competitionId, seasonId).catch(() => ({ id: competitionId, rounds: [] })),
+                    getCompetitionFixtures(competitionId, seasonId).catch(() => ({ id: competitionId, fixtures: [] })),
+                    getCompetitionScorers(competitionId, seasonId).catch(() => ({ id: competitionId, scorers: [] })),
                 ]);
-                if (!cancelled) setLocalDetails({ clubs, table, knockout });
+                if (!cancelled) setLocalDetails({ clubs, table, knockout, fixtures, scorers });
             } catch (err) {
                 if (!cancelled) setLocalDetails(prev => prev);
             } finally {
@@ -103,9 +118,13 @@ const CompetitionDialog: React.FC<CompetitionDialogProps> = ({ details, onClubCl
     const clubs = localDetails.clubs;
     const table = localDetails.table;
     const knockout = localDetails.knockout;
+    const fixtures = localDetails.fixtures;
+    const scorers = localDetails.scorers;
 
     const hasTable = table?.table && table.table.length > 0;
     const hasKnockout = knockout?.rounds && knockout.rounds.length > 0;
+    const hasFixtures = fixtures?.fixtures && fixtures.fixtures.length > 0;
+    const hasScorers = scorers?.scorers && scorers.scorers.length > 0;
 
     return (
         <Grid container>
@@ -188,6 +207,111 @@ const CompetitionDialog: React.FC<CompetitionDialogProps> = ({ details, onClubCl
                         </TableContainer>
                     </Box>
                 )}
+
+                {/* Fixtures - always show section */}
+                <Box sx={{ mb: 4 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <FixturesIcon color="primary" /> Fixtures
+                    </Typography>
+                    {hasFixtures ? (
+                        <>
+                            <TableContainer component={Paper} elevation={0} sx={{ bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 3, mb: 4, maxHeight: 320 }}>
+                                <Table size="small" stickyHeader>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Time</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Home</TableCell>
+                                            <TableCell align="center" sx={{ fontWeight: 700 }}>Score</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Away</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {fixtures!.fixtures.slice(0, 50).map((f, idx) => (
+                                            <TableRow key={idx}>
+                                                <TableCell>{f.date ?? '—'}</TableCell>
+                                                <TableCell>{f.time ?? '—'}</TableCell>
+                                                <TableCell
+                                                    onClick={() => f.homeTeamId && onClubClick(f.homeTeamId)}
+                                                    sx={{ cursor: f.homeTeamId ? 'pointer' : 'default', '&:hover': f.homeTeamId ? { bgcolor: 'rgba(255,255,255,0.05)' } : {} }}
+                                                >
+                                                    {f.homeTeamName ?? '—'}
+                                                </TableCell>
+                                                <TableCell align="center" sx={{ fontWeight: 600 }}>{f.score ?? '–'}</TableCell>
+                                                <TableCell
+                                                    onClick={() => f.awayTeamId && onClubClick(f.awayTeamId)}
+                                                    sx={{ cursor: f.awayTeamId ? 'pointer' : 'default', '&:hover': f.awayTeamId ? { bgcolor: 'rgba(255,255,255,0.05)' } : {} }}
+                                                >
+                                                    {f.awayTeamName ?? '—'}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                            {fixtures!.fixtures.length > 50 && (
+                                <Typography variant="caption" color="text.secondary">Showing first 50 fixtures</Typography>
+                            )}
+                        </>
+                    ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                            No fixtures loaded for this competition.
+                        </Typography>
+                    )}
+                </Box>
+
+                {/* Player stats (top scorers) - always show section */}
+                <Box sx={{ mb: 4 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <PlayerStatsIcon color="primary" /> Player stats
+                    </Typography>
+                    {hasScorers ? (
+                        <TableContainer component={Paper} elevation={0} sx={{ bgcolor: 'rgba(255,255,255,0.03)', borderRadius: 3, mb: 4 }}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 700 }}>#</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Player</TableCell>
+                                        <TableCell sx={{ fontWeight: 700 }}>Club</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700 }}>G</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700 }}>A</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700 }}>Pts</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {scorers.scorers.map((row) => (
+                                        <TableRow key={row.rank}>
+                                            <TableCell>{row.rank}</TableCell>
+                                            <TableCell
+                                                onClick={() => row.playerId && onPlayerClick?.(row.playerId)}
+                                                sx={{
+                                                    cursor: row.playerId && onPlayerClick ? 'pointer' : 'default',
+                                                    fontWeight: 600,
+                                                    '&:hover': row.playerId && onPlayerClick ? { bgcolor: 'rgba(255,255,255,0.05)' } : {},
+                                                }}
+                                            >
+                                                {row.playerName}
+                                            </TableCell>
+                                            <TableCell
+                                                onClick={() => row.clubId && onClubClick(row.clubId)}
+                                                sx={{ cursor: row.clubId ? 'pointer' : 'default', '&:hover': row.clubId ? { bgcolor: 'rgba(255,255,255,0.05)' } : {} }}
+                                            >
+                                                {row.clubName ?? '—'}
+                                            </TableCell>
+                                            <TableCell align="right">{row.goals}</TableCell>
+                                            <TableCell align="right">{row.assists}</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 700 }}>{row.points}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    ) : (
+                        <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
+                            No player stats (top scorers) loaded for this competition.
+                        </Typography>
+                    )}
+                </Box>
 
                 {/* Knockout Stages - show when available */}
                 {hasKnockout && (

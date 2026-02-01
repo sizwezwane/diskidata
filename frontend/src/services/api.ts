@@ -134,6 +134,40 @@ export interface CompetitionKnockout {
     rounds: KnockoutRound[];
 }
 
+export interface CompetitionFixture {
+    date?: string;
+    time?: string;
+    homeTeamId?: string;
+    homeTeamName?: string;
+    awayTeamId?: string;
+    awayTeamName?: string;
+    score?: string;
+    matchday?: string;
+}
+
+export interface CompetitionFixtures {
+    id: string;
+    fixtures: CompetitionFixture[];
+}
+
+export interface CompetitionScorer {
+    rank: number;
+    playerId?: string;
+    playerName: string;
+    position?: string;
+    clubId?: string;
+    clubName?: string;
+    games: number;
+    goals: number;
+    assists: number;
+    points: number;
+}
+
+export interface CompetitionScorers {
+    id: string;
+    scorers: CompetitionScorer[];
+}
+
 // API Functions
 export const searchPlayers = async (query: string): Promise<SearchResponse> => {
     const response = await api.get<SearchResponse>(`/players/search/${encodeURIComponent(query)}`);
@@ -192,6 +226,18 @@ export const getCompetitionTable = async (id: string, seasonId?: string): Promis
 export const getCompetitionKnockout = async (id: string, seasonId?: string): Promise<CompetitionKnockout> => {
     const params = seasonId ? { season_id: seasonId } : {};
     const response = await api.get<CompetitionKnockout>(`/competitions/${id}/knockout`, { params });
+    return response.data;
+};
+
+export const getCompetitionFixtures = async (id: string, seasonId?: string): Promise<CompetitionFixtures> => {
+    const params = seasonId ? { season_id: seasonId } : {};
+    const response = await api.get<CompetitionFixtures>(`/competitions/${id}/fixtures`, { params });
+    return response.data;
+};
+
+export const getCompetitionScorers = async (id: string, seasonId?: string): Promise<CompetitionScorers> => {
+    const params = seasonId ? { season_id: seasonId } : {};
+    const response = await api.get<CompetitionScorers>(`/competitions/${id}/scorers`, { params });
     return response.data;
 };
 

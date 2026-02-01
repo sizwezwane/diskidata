@@ -29,7 +29,8 @@ import Badge from '@mui/material/Badge';
 import {
     searchPlayers, getPlayerProfile, getPlayerMarketValue, getPlayerStats,
     searchClubs, getClubProfile, getClubPlayers,
-    searchCompetitions, getCompetitionClubs, getCompetitionTable, getCompetitionKnockout
+    searchCompetitions, getCompetitionClubs, getCompetitionTable, getCompetitionKnockout,
+    getCompetitionFixtures, getCompetitionScorers
 } from '../services/api';
 import PlayerDialog from '../components/dialogs/PlayerDialog';
 import ClubDialog from '../components/dialogs/ClubDialog';
@@ -123,11 +124,13 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
                 const clubs = await getCompetitionClubs(id);
                 const seasonId = (clubs as { seasonId?: string; season_id?: string }).seasonId
                     || (clubs as { seasonId?: string; season_id?: string }).season_id;
-                const [table, knockout] = await Promise.all([
+                const [table, knockout, fixtures, scorers] = await Promise.all([
                     getCompetitionTable(id, seasonId).catch(() => ({ id, table: [] })),
                     getCompetitionKnockout(id, seasonId).catch(() => ({ id, rounds: [] })),
+                    getCompetitionFixtures(id, seasonId).catch(() => ({ id, fixtures: [] })),
+                    getCompetitionScorers(id, seasonId).catch(() => ({ id, scorers: [] })),
                 ]);
-                data = { clubs, table, knockout };
+                data = { clubs, table, knockout, fixtures, scorers };
             }
             setDetails(data);
         } catch (err) {
@@ -283,6 +286,7 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
                                 <CompetitionDialog
                                     details={details}
                                     onClubClick={(id) => handleViewDetails(id, 'clubs')}
+                                    onPlayerClick={(id) => handleViewDetails(id, 'players')}
                                 />
                             )}
                         </>
