@@ -29,7 +29,7 @@ import Badge from '@mui/material/Badge';
 import {
     searchPlayers, getPlayerProfile, getPlayerMarketValue, getPlayerStats,
     searchClubs, getClubProfile, getClubPlayers,
-    searchCompetitions, getCompetitionClubs
+    searchCompetitions, getCompetitionClubs, getCompetitionTable, getCompetitionKnockout
 } from '../services/api';
 import PlayerDialog from '../components/dialogs/PlayerDialog';
 import ClubDialog from '../components/dialogs/ClubDialog';
@@ -121,7 +121,13 @@ const SearchPage: React.FC<SearchPageProps> = ({ searchType }) => {
                 data = { profile, players };
             } else {
                 const clubs = await getCompetitionClubs(id);
-                data = { clubs };
+                const seasonId = (clubs as { seasonId?: string; season_id?: string }).seasonId
+                    || (clubs as { seasonId?: string; season_id?: string }).season_id;
+                const [table, knockout] = await Promise.all([
+                    getCompetitionTable(id, seasonId).catch(() => ({ id, table: [] })),
+                    getCompetitionKnockout(id, seasonId).catch(() => ({ id, rounds: [] })),
+                ]);
+                data = { clubs, table, knockout };
             }
             setDetails(data);
         } catch (err) {

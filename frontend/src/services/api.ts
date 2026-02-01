@@ -96,6 +96,44 @@ export interface CompetitionClubs {
     clubs: CompetitionClub[];
 }
 
+export interface CompetitionTableRow {
+    rank: number;
+    clubId: string;
+    clubName: string;
+    matches: number;
+    wins: number;
+    draws: number;
+    losses: number;
+    goalsForAgainst: string;
+    goalDifference: string;
+    points: number;
+}
+
+export interface CompetitionTable {
+    id: string;
+    table: CompetitionTableRow[];
+}
+
+export interface KnockoutMatch {
+    roundName: string;
+    homeTeam: string;
+    awayTeam: string;
+    homeScore?: number;
+    awayScore?: number;
+    homeTeamId?: string;
+    awayTeamId?: string;
+}
+
+export interface KnockoutRound {
+    roundName: string;
+    matches: KnockoutMatch[];
+}
+
+export interface CompetitionKnockout {
+    id: string;
+    rounds: KnockoutRound[];
+}
+
 // API Functions
 export const searchPlayers = async (query: string): Promise<SearchResponse> => {
     const response = await api.get<SearchResponse>(`/players/search/${encodeURIComponent(query)}`);
@@ -139,8 +177,21 @@ export const searchCompetitions = async (query: string): Promise<SearchResponse>
     return response.data;
 };
 
-export const getCompetitionClubs = async (id: string): Promise<CompetitionClubs> => {
-    const response = await api.get<CompetitionClubs>(`/competitions/${id}/clubs`);
+export const getCompetitionClubs = async (id: string, seasonId?: string): Promise<CompetitionClubs> => {
+    const params = seasonId ? { season_id: seasonId } : {};
+    const response = await api.get<CompetitionClubs>(`/competitions/${id}/clubs`, { params });
+    return response.data;
+};
+
+export const getCompetitionTable = async (id: string, seasonId?: string): Promise<CompetitionTable> => {
+    const params = seasonId ? { season_id: seasonId } : {};
+    const response = await api.get<CompetitionTable>(`/competitions/${id}/table`, { params });
+    return response.data;
+};
+
+export const getCompetitionKnockout = async (id: string, seasonId?: string): Promise<CompetitionKnockout> => {
+    const params = seasonId ? { season_id: seasonId } : {};
+    const response = await api.get<CompetitionKnockout>(`/competitions/${id}/knockout`, { params });
     return response.data;
 };
 
